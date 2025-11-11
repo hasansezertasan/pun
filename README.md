@@ -1,87 +1,93 @@
-# projectname
+# pun
 
-This is a Opinionated GitHub Repository Template with the following:
+<!-- TODO: Make it work, make it right, make it fast. -->
 
-- `uv` package manager support.
-- Build with `hatchling`, dynamic versioning through GitHub Release Tags.
-- Tests setup with `pytest` and `tox`.
-- Linting and Formatting with `ruff`.
-- Type checking with `mypy`.
-- Logging setup.
-- Configuration setup.
-- Typer CLI
-- `pre-commit` configuration.
-- Dev container configuration.
-- Generic `.gitignore` setup.
-- GitHub Actions:
-  - CI: Type Checking, Linting, Formatting, Testing, etc.
-  - CD: PyPI Trusted Host Publishing and GitHub Releases.
-- Release Drafter.
-- PR Title Checker.
-- Issue and Pull Request Templates and Configurations.
-- VSCode Debugging Configuration.
+[![CI](https://github.com/hasansezertasan/pun/actions/workflows/ci.yml/badge.svg)](https://github.com/hasansezertasan/pun/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/codecov/c/github/hasansezertasan/pun)](https://codecov.io/gh/hasansezertasan/pun)
+[![PyPI - Version](https://img.shields.io/pypi/v/pun.svg)](https://pypi.org/project/pun)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pun.svg)](https://pypi.org/project/pun)
+[![License - MIT](https://img.shields.io/github/license/hasansezertasan/pun.svg)](https://opensource.org/licenses/MIT)
+[![Latest Commit](https://img.shields.io/github/last-commit/hasansezertasan/pun)](https://github.com/hasansezertasan/pun)
+
+[![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
+[![linting - Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![GitHub Tag](https://img.shields.io/github/tag/hasansezertasan/pun?include_prereleases=&sort=semver&color=black)](https://github.com/hasansezertasan/pun/releases/)
+
+[![Downloads](https://pepy.tech/badge/pun)](https://pepy.tech/project/pun)
+[![Downloads/Month](https://pepy.tech/badge/pun/month)](https://pepy.tech/project/pun)
+[![Downloads/Week](https://pepy.tech/badge/pun/week)](https://pepy.tech/project/pun)
+
+> This is a pun.
+
+-----
+
+## Table of Contents
+
+<!-- TODO @hasansezertasan: Add table of contents. -->
+
+## Screenshots
+
+<!-- TODO @hasansezertasan: Add screenshots. -->
+
+## Installation
+
+```console
+pip install pun
+```
 
 ## Usage
 
-### Renaming
+<!-- TODO @hasansezertasan: Add usage instructions. -->
 
-Well, rename the project name and author name.
+## Support :heart:
 
-### Customizing
+If you have any questions or need help, feel free to open an issue on the [GitHub repository][pun].
 
-- [ ] [Rename](#renaming) the project name and author.
-- [ ] Go ahead and update the [LICENSE](LICENSE) with your preferred license.
-- [ ] Go ahead and update the [CONTRIBUTING.md](CONTRIBUTING.md) with your preferred contribution guidelines.
-- [ ] Go ahead and update the [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) with your preferred code of conduct.
-- [ ] Go ahead and update the [README_ACTUAL.md](README_ACTUAL.md) with your own project details.
-- [ ] Go ahead and update the [CHANGELOG.md](CHANGELOG.md) with your preferred changelog format.
-- [ ] Go ahead and update the [pyproject.toml](pyproject.toml) with your own project details. Make sure you have completed all TODOs.
-- [ ] Double check the [.gitignore](.gitignore) file and don't stage any secrets!
-- [ ] Go ahead and update your repository settings as you wish.
+## Motivation
 
-### PyPI Integration
+<!-- TODO @hasansezertasan: Add motivation. -->
 
-How to integrate with PyPI with GitHub Actions?
+## Features
 
-1. Go to [Trusted Publisher Management](https://pypi.org/manage/account/publishing//).
-1. Scroll down to the "Add a new pending publisher" section.
-1. Select "GitHub".
-1. Enter the name of your package in the "PyPI Project Name" field.
-1. Enter the username of your GitHub account in the "Owner" field.
-1. Enter the name of your repository in the "Repository name" field.
-1. Enter the workflow name of the [CD](.github/workflows/cd.yml) workflow in the "Workflow name" field. Just type `cd.yml` if you haven't changed the workflow name.
-1. Enter the environment name of the [CD](.github/workflows/cd.yml) workflow in the "Environment name" field. Just type `publish` if you haven't changed the environment name.
-1. Click the "Add" button.
+<!-- TODO @hasansezertasan: Add features. -->
 
-### Release
+## About
 
-How to release a new version of the project?
+<!-- TODO @hasansezertasan: Add about section. -->
 
-1. Create a new release draft on GitHub.
-1. Update your [CHANGELOG.md](CHANGELOG.md) with the new version.
-1. Convert the release draft to a release.
-1. The release will trigger the [CD](.github/workflows/cd.yml) workflow:
-    1. The workflow will build the project and publish it to PyPI.
-    1. The workflow will also attach the build artifacts to the release.
-
-### Sayonara
-
-```sh
-# Remove this file and copy the actual README
-rm README.md && cp README_ACTUAL.md README.md
-```
-
-## Author
+## Author :person_with_crown:
 
 This project is maintained by [Hasan Sezer Taşan][author], It's me :wave:
 
+## Analysis
+
+- [Snyk Python Package Health Analysis](https://snyk.io/advisor/python/pun)
+- [Libraries.io - PyPI](https://libraries.io/pypi/pun)
+- [Safety DB](https://data.safetycli.com/packages/pypi/pun)
+- [PePy Download Stats](https://www.pepy.tech/projects/pun)
+- [PyPI Download Stats](https://pypistats.org/packages/pun)
+- [Pip Trends Download Stats](https://piptrends.com/package/pun)
+
+## Contributing :heart:
+
+<!-- TODO @hasansezertasan: Add contributing instructions. -->
+
+## Development :toolbox:
+
+<!--TODO @hasansezertasan: Add development instructions. -->
+
 ## Disclaimer
 
-This template is not intended to be used for malicious purposes. The author is not responsible for any damage caused by this template. Use at your own risk.
+<!-- TODO @hasansezertasan: Add disclaimer. -->
 
-## License
+## License :scroll:
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the [MIT License](https://spdx.org/licenses/MIT.html).
+
+## Changelog :memo:
+
+<!-- TODO @hasansezertasan: Add changelog -->
 
 <!-- Refs -->
 [author]: https://github.com/hasansezertasan
+[pun]: https://github.com/hasansezertasan/pun
