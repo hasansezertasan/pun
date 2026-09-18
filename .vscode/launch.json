@@ -34,12 +34,19 @@
     
     
     {
+      // debugpy's `args` is Array[string] and VS Code substitutes an input into
+      // a single array element, so a free-text prompt cannot be split into
+      // separate arguments: "version --help" would arrive as one token, and the
+      // old empty default sent `uv run pun ""`, which Typer rejects with
+      // "No such command ''" instead of showing the root help. A pickString
+      // keeps every value a single token, so each choice is always valid.
+      // To debug a command with flags, edit "args" below directly.
       "name": "Python: CLI",
       "type": "debugpy",
       "request": "launch",
       "justMyCode": true,
       "module": "uv",
-      "args": ["run", "pun", "${input:args}"]
+      "args": ["run", "pun", "${input:command}"]
     },
     
     
@@ -57,10 +64,11 @@
   ],
   "inputs": [
     {
-      "id": "args",
-      "type": "promptString",
-      "default": "",
-      "description": "Arguments passed to the pun CLI"
+      "id": "command",
+      "type": "pickString",
+      "options": ["version", "info", "interactive"],
+      "default": "version",
+      "description": "pun command to debug"
     }
   ]
 }
