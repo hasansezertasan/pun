@@ -36,6 +36,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
         with:
+          # sphinx-last-updated-by-git reads each page's commit date from the
+          # history, and errors with "Git clone too shallow" on the default
+          # depth-1 checkout. gh-pages.yml already fetches the full history for
+          # the same reason.
+          fetch-depth: 0
           persist-credentials: false
       - name: Set up Python
         if: github.event.action != 'closed'
