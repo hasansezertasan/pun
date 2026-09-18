@@ -595,6 +595,10 @@ jobs:
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5  # v7.1.1
         with:
           files: ./coverage.xml
+          # .github/codecov.yml restricts the project status to the `unit` flag.
+          # Without it the upload carries no flag, nothing matches that status,
+          # and the configured 99% gate silently never reports.
+          flags: unit
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Note skipped coverage upload
         if: ${{ env.CODECOV_TOKEN_SET != 'true' && env.REPO_IS_PUBLIC != 'true' }}

@@ -196,10 +196,6 @@ instance/
 
 # Sphinx documentation
 docs/_build/
-# Machine-generated reference material (CLI Markdown) written by docs/conf.py on
-# every docs build. conf.py documents it as uncommitted; without this entry it
-# gets picked up by `git add -A` after any local build or test run.
-docs/_generated/
 
 # PyBuilder
 .pybuilder/
@@ -358,6 +354,10 @@ __marimo__/
 # Version manifest generated into each docs build by tools/build_docs.py from the
 # gh-pages branch listing (ADR-027); regenerated, never committed.
 docs/_static/versions.json
+# Machine-generated reference material (CLI Markdown) written by docs/conf.py on
+# every docs build. conf.py documents it as uncommitted; without this entry it
+# gets picked up by `git add -A` after any local build or test run.
+docs/_generated/
 # MegaLinter local report output (REPORT_OUTPUT_FOLDER in .mega-linter.yml)
 megalinter-reports/
 src/**/_version.py
