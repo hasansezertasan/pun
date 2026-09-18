@@ -196,6 +196,10 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+# Machine-generated reference material (CLI Markdown) written by docs/conf.py on
+# every docs build. conf.py documents it as uncommitted; without this entry it
+# gets picked up by `git add -A` after any local build or test run.
+docs/_generated/
 
 # PyBuilder
 .pybuilder/
