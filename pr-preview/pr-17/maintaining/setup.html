@@ -195,6 +195,11 @@ which fails while any unticked checkbox remains in the PR description.</p></li>
 coverage gates, style, hooks, doctest and installed-CLI jobs. Without it the
 four checks above are all that is required, so a pull request whose test suite
 failed can still be merged.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Deploy</span> <span class="pre">docs</span> <span class="pre">preview</span></code> — the documentation build (<code class="docutils literal notranslate"><span class="pre">docs-preview.yml</span></code>). It is
+the only job on a pull request that runs <code class="docutils literal notranslate"><span class="pre">docs/check_warnings.py</span></code>: <code class="docutils literal notranslate"><span class="pre">check</span></code>
+rolls up <code class="docutils literal notranslate"><span class="pre">docs-doctest</span></code>, which is the doctest builder and has no warning
+gate. Without this context a pull request introducing broken references or
+other disallowed Sphinx warnings merges with every required check green.</p></li>
 </ul>
 <p><strong>[AGENT]</strong></p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span data-line="1">gh<span class="w"> </span>api<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span>repos/hasansezertasan/pun/branches/main/protection<span class="w"> </span><span class="se">\</span>
@@ -202,7 +207,7 @@ failed can still be merged.</p></li>
 </span><span data-line="3"><span class="s">{</span>
 </span><span data-line="4"><span class="s">  "required_status_checks": {</span>
 </span><span data-line="5"><span class="s">    "strict": true,</span>
-</span><span data-line="6"><span class="s">    "contexts": ["Validate PR title", "Validate branch name", "Verify linked issue", "Task Completed Checker", "check"]</span>
+</span><span data-line="6"><span class="s">    "contexts": ["Validate PR title", "Validate branch name", "Verify linked issue", "Task Completed Checker", "check", "Deploy docs preview"]</span>
 </span><span data-line="7"><span class="s">  },</span>
 </span><span data-line="8"><span class="s">  "enforce_admins": null,</span>
 </span><span data-line="9"><span class="s">  "required_pull_request_reviews": null,</span>
@@ -213,7 +218,7 @@ failed can still be merged.</p></li>
 </div>
 <p><strong>[CHECK]</strong></p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span data-line="1">gh<span class="w"> </span>api<span class="w"> </span>repos/hasansezertasan/pun/branches/main/protection<span class="w"> </span><span class="se">\</span>
-</span><span data-line="2"><span class="w">  </span>--jq<span class="w"> </span><span class="s1">'(.required_status_checks.strict == true) and ((["Validate PR title","Validate branch name","Verify linked issue","Task Completed Checker","check"] - (.required_status_checks.contexts // [])) == [])'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-qx<span class="w"> </span><span class="nb">true</span>
+</span><span data-line="2"><span class="w">  </span>--jq<span class="w"> </span><span class="s1">'(.required_status_checks.strict == true) and ((["Validate PR title","Validate branch name","Verify linked issue","Task Completed Checker","check","Deploy docs preview"] - (.required_status_checks.contexts // [])) == [])'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-qx<span class="w"> </span><span class="nb">true</span>
 </span></pre></div>
 </div>
 <p>UI equivalent: <strong>Settings → Branches → Add branch ruleset</strong> (or <strong>Add rule</strong> for
