@@ -1,1 +1,1 @@
-"""This is a pun."""
+"""Top-level package for the project."""
