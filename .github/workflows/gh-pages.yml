@@ -19,21 +19,6 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
-        with:
-          python-version-file: .python-version
-      - name: Setup uv
-        id: setup-uv
-        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4  # v10.1.0
-        with:
-          enable-cache: true
-          cache-dependency-glob: |
-            pyproject.toml
-            uv.lock
-      - name: Restore cache
-        if: steps.setup-uv.outputs.cache-hit == 'true'
-        run: echo "Cache was restored"
       - name: Check out the latest release tag
         # Manual redeploy has no release event. Build the newest *released* tag's
         # source (not the default branch's HEAD, which may carry unreleased
@@ -54,6 +39,26 @@ jobs:
           tag="$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" --jq .tag_name)"
           git checkout --force --detach "$tag"
           echo "DOCS_BUILD_VERSION=${tag#v}" >> "$GITHUB_ENV"
+      # Python and uv are set up *after* the tag checkout on purpose: both
+      # read pinned files from the working tree (.python-version, and
+      # pyproject.toml/uv.lock for the cache key). Run before the checkout
+      # they would take them from the default branch, so a redeploy would
+      # rebuild the tagged docs with whatever interpreter main has moved to.
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version-file: .python-version
+      - name: Setup uv
+        id: setup-uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4  # v10.1.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+      - name: Restore cache
+        if: steps.setup-uv.outputs.cache-hit == 'true'
+        run: echo "Cache was restored"
       - name: Set reproducible build epoch
         # Pin Sphinx's "today"/copyright to the checked-out tag's commit date so
         # the same tag always renders the same docs output (reproducible-builds.org).

@@ -181,13 +181,21 @@ def build_sphinx() -> None:
     )
 
 
-def preserve_from_gh_pages(name: str, out: Path, ref: str) -> None:
+def preserve_from_gh_pages(name: str, out: Path, ref: str, *, required: bool) -> None:
     """Extract the ``name`` subtree from gh-pages into ``out`` (keeping prefix).
 
     Args:
         name: The version-directory (or ``latest``) name to preserve.
         out: The assembled-site output directory to extract into.
         ref: The resolved gh-pages ref to read from.
+        required: Whether ``name`` is known to be published on gh-pages. Version
+            slugs come from ``existing_versions()``, i.e. a ``git ls-tree`` of
+            the branch, so they provably exist and any failure to read one is a
+            real error. The ``latest`` alias is optional and may legitimately be
+            absent.
+
+    Raises:
+        RuntimeError: If a published version cannot be read from gh-pages.
     """
     archive = subprocess.run(  # noqa: S603
         ["git", "archive", ref, name],  # noqa: S607
@@ -195,7 +203,20 @@ def preserve_from_gh_pages(name: str, out: Path, ref: str) -> None:
         check=False,
     )
     if archive.returncode != 0 or not archive.stdout:
-        return  # not present on gh-pages (e.g. first release) — nothing to keep
+        if required:
+            # Treating this as "absent" would drop the version from the
+            # assembled site, and the deploy cleans gh-pages of everything the
+            # site omits (bar pr-preview/**) — so a transient git failure would
+            # silently delete a published version. Fail the release instead.
+            msg = (
+                f"Could not read published docs version {name!r} from "
+                f"{ref} (git archive exit {archive.returncode}): "
+                f"{archive.stderr.decode(errors='replace').strip()}. "
+                "Refusing to assemble a site without it, since deploying "
+                "would delete it from gh-pages."
+            )
+            raise RuntimeError(msg)
+        return  # optional alias not present on gh-pages — nothing to keep
     # Extract the in-memory tar with the stdlib so the script needs no external
     # ``tar`` binary. The stream is our own trusted ``git archive`` output; use
     # the safe extraction filter where available (Python 3.12+).
@@ -229,8 +250,8 @@ def assemble_site(out: Path, slug: str, latest: str, all_slugs: list[str]) -> No
     preserved = {s for s in all_slugs if s != slug}
     if slug != latest:
         preserved.add("latest")
-    for name in preserved:
-        preserve_from_gh_pages(name, out, ref)
+    for name in sorted(preserved):
+        preserve_from_gh_pages(name, out, ref, required=name != "latest")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
