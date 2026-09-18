@@ -65,6 +65,10 @@ contexts as required (the names are the **check runs**, not the workflow files):
   which fails a PR with no linked issue.
 - ``Task Completed Checker`` — the PR task-list gate (``task-completed-check.yml``),
   which fails while any unticked checkbox remains in the PR description.
+- ``check`` — the aggregate CI gate (``ci.yml``), which rolls up the tests,
+  coverage gates, style, hooks, doctest and installed-CLI jobs. Without it the
+  four checks above are all that is required, so a pull request whose test suite
+  failed can still be merged.
 
 **[AGENT]**
 
@@ -75,7 +79,7 @@ contexts as required (the names are the **check runs**, not the workflow files):
    {
      "required_status_checks": {
        "strict": true,
-       "contexts": ["Validate PR title", "Validate branch name", "Verify linked issue", "Task Completed Checker"]
+       "contexts": ["Validate PR title", "Validate branch name", "Verify linked issue", "Task Completed Checker", "check"]
      },
      "enforce_admins": null,
      "required_pull_request_reviews": null,
@@ -88,11 +92,11 @@ contexts as required (the names are the **check runs**, not the workflow files):
 .. code-block:: sh
 
    gh api repos/hasansezertasan/pun/branches/main/protection \
-     --jq '(.required_status_checks.strict == true) and ((["Validate PR title","Validate branch name","Verify linked issue","Task Completed Checker"] - (.required_status_checks.contexts // [])) == [])' | grep -qx true
+     --jq '(.required_status_checks.strict == true) and ((["Validate PR title","Validate branch name","Verify linked issue","Task Completed Checker","check"] - (.required_status_checks.contexts // [])) == [])' | grep -qx true
 
 UI equivalent: **Settings → Branches → Add branch ruleset** (or **Add rule** for
 ``main``) — enable **Require status checks to pass before merging**, then search
-for and add the four contexts above. The contexts only appear in the picker
+for and add the contexts above. The contexts only appear in the picker
 after each check has run at least once.
 
 Let Actions open the release PR

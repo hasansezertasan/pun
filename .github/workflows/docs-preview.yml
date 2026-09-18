@@ -7,9 +7,14 @@ name: Docs Preview
 # gh-pages.yml publish to the branch *root* and set `clean-exclude: pr-preview/**`
 # so a release never wipes live previews. See ADR-010.
 #
-# Same-repo PRs only: a fork PR's GITHUB_TOKEN is read-only and cannot deploy, so
-# the `if` guard skips forks cleanly rather than failing (fork-preview support is
-# planned for rossjrw/pr-preview-action v2). Plain `pull_request` (not
+# The job builds the docs for every PR and only the deploy step is same-repo
+# only: a fork PR's GITHUB_TOKEN is read-only and cannot deploy, so the `if`
+# guard on that step skips forks cleanly rather than failing (fork-preview
+# support is planned for rossjrw/pr-preview-action v2). The guard deliberately
+# does not sit on the job — the build step below is the only place
+# docs/check_warnings.py runs on a pull request (ci.yml runs the doctest
+# builder, not the HTML build), so guarding the job let every fork PR through
+# with unreviewed Sphinx warnings. Plain `pull_request` (not
 # pull_request_target) means untrusted PR code never runs with the write token,
 # so no `dangerous-triggers` exception is needed.
 on:
@@ -26,7 +31,6 @@ concurrency:
 jobs:
   docs-preview:
     name: Deploy docs preview
-    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -72,6 +76,12 @@ jobs:
           uv run --no-default-groups --group docs sphinx-build -w docs/_build/warnings.txt -b html docs docs/_build/html
           uv run --no-default-groups --group docs python docs/check_warnings.py
       - name: Deploy preview
+        # Same-repo PRs only: a fork PR's GITHUB_TOKEN is read-only and cannot
+        # write to gh-pages. The guard sits on this step alone so the build and
+        # the check_warnings.py gate above still run for fork PRs — they are the
+        # only place that gate runs on a pull request, and skipping the whole
+        # job let Sphinx warnings through CI unnoticed on every fork PR.
+        if: github.event.pull_request.head.repo.full_name == github.repository
         # action: auto deploys on opened/synchronize/reopened and removes the
         # pr-preview/pr-<N>/ subfolder on closed; the sticky comment is updated
         # in both cases. The action authenticates from its `token` input

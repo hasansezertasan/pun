@@ -27,7 +27,13 @@ def test_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     for name in ("DEBUG", "LOG_LEVEL", "CONFIG_DIR"):
         monkeypatch.delenv(f"{ENV_PREFIX}{name}", raising=False)
 
-    settings = Settings()
+    # Clearing the process environment is not enough: ``Settings`` declares
+    # ``env_file=".env"``, so a contributor who followed ``.env.example`` and
+    # created a real ``.env`` would have those values reloaded here and fail
+    # this test on their machine only. ``_env_file=None`` disables the dotenv
+    # source for this instantiation so the assertions below see the declared
+    # field defaults and nothing else.
+    settings = Settings(_env_file=None)
 
     assert settings.debug is False
     assert settings.log_level == "INFO"
