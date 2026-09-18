@@ -12,13 +12,13 @@ version deleted.
 from __future__ import annotations
 
 import importlib.util
-import subprocess
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from types import ModuleType
 
 _BUILD_DOCS = Path(__file__).parents[1] / "tools" / "build_docs.py"
@@ -38,13 +38,22 @@ def _load() -> ModuleType:
     return module
 
 
-def _fail(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[bytes]:
-    """Stand in for a ``git archive`` invocation that errors.
+def _failing_run(module: ModuleType) -> Callable[..., Any]:
+    """Build a stand-in for a ``git archive`` invocation that errors.
+
+    Args:
+        module: The loaded ``build_docs`` module, used for its ``subprocess``.
 
     Returns:
-        A completed process carrying a non-zero return code.
+        A callable shaped like ``subprocess.run`` that reports failure.
     """
-    return subprocess.CompletedProcess(args=[], returncode=128, stdout=b"", stderr=b"boom")
+
+    def run(*_args: object, **_kwargs: object) -> Any:  # noqa: ANN401
+        return module.subprocess.CompletedProcess(
+            args=[], returncode=128, stdout=b"", stderr=b"boom"
+        )
+
+    return run
 
 
 def test_published_version_failure_aborts(
@@ -52,9 +61,9 @@ def test_published_version_failure_aborts(
 ) -> None:
     """A published version that cannot be archived fails instead of vanishing."""
     module = _load()
-    monkeypatch.setattr(module.subprocess, "run", _fail)
+    monkeypatch.setattr(module.subprocess, "run", _failing_run(module))
 
-    with pytest.raises(RuntimeError, match="0.1"):
+    with pytest.raises(RuntimeError, match="Could not read published docs version"):
         module.preserve_from_gh_pages("0.1", tmp_path, "origin/gh-pages", required=True)
 
 
@@ -63,6 +72,6 @@ def test_optional_alias_failure_is_tolerated(
 ) -> None:
     """The optional ``latest`` alias may be absent without failing the build."""
     module = _load()
-    monkeypatch.setattr(module.subprocess, "run", _fail)
+    monkeypatch.setattr(module.subprocess, "run", _failing_run(module))
 
     module.preserve_from_gh_pages("latest", tmp_path, "origin/gh-pages", required=False)
