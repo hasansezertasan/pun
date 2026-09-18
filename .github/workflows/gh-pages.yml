@@ -1,0 +1,105 @@
+---
+name: Github Pages
+# Automatic docs deployment on release lives in the `deploy-docs` job of
+# release.yml, because a `release: published` event fired by that
+# workflow's GITHUB_TOKEN cannot trigger a separate workflow. This workflow is
+# kept for manual, on-demand docs redeploys via the Actions tab.
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    name: Deploy Docs
+    permissions:
+      contents: write  # IMPORTANT: Mandatory for GitHub Pages
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check out the latest release tag
+        # Manual redeploy has no release event. Build the newest *released* tag's
+        # source (not the default branch's HEAD, which may carry unreleased
+        # commits that would overwrite the tagged version's docs), and set
+        # DOCS_BUILD_VERSION from that same tag. Requires at least one release.
+        #
+        # Ask GitHub for the latest release rather than using `git describe`:
+        # release-please sets `force-tag-creation`, so the tag exists from the
+        # moment the release PR merges, while the release itself stays a draft
+        # until the publish jobs succeed. `git describe` knows nothing about
+        # release state and would pick that tag, publishing an unreleased (or
+        # failed) version's docs as `latest` — exactly when a manual redeploy is
+        # most likely to be run. `/releases/latest` excludes drafts and
+        # prereleases by definition.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" --jq .tag_name)"
+          git checkout --force --detach "$tag"
+          echo "DOCS_BUILD_VERSION=${tag#v}" >> "$GITHUB_ENV"
+      # Python and uv are set up *after* the tag checkout on purpose: both
+      # read pinned files from the working tree (.python-version, and
+      # pyproject.toml/uv.lock for the cache key). Run before the checkout
+      # they would take them from the default branch, so a redeploy would
+      # rebuild the tagged docs with whatever interpreter main has moved to.
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version-file: .python-version
+      - name: Setup uv
+        id: setup-uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4  # v10.1.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+      - name: Restore cache
+        if: steps.setup-uv.outputs.cache-hit == 'true'
+        run: echo "Cache was restored"
+      - name: Set reproducible build epoch
+        # Pin Sphinx's "today"/copyright to the checked-out tag's commit date so
+        # the same tag always renders the same docs output (reproducible-builds.org).
+        run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
+      - name: Fetch gh-pages branch
+        # build_docs.py preserves already-published versions from gh-pages, and the
+        # deploy below cleans the branch (keeping only pr-preview/**). A swallowed
+        # fetch error would therefore look identical to "no prior versions" and
+        # delete every published version directory. Distinguish the two: exit 2
+        # from `ls-remote --exit-code` means the ref genuinely does not exist yet
+        # (the first release); anything else is a real failure and must stop here.
+        run: |
+          set +e
+          git ls-remote --exit-code --heads origin gh-pages >/dev/null 2>&1
+          rc=$?
+          set -e
+          if [ "$rc" -eq 0 ]; then
+            git fetch origin gh-pages:gh-pages
+          elif [ "$rc" -eq 2 ]; then
+            echo "gh-pages does not exist yet — first release, nothing to preserve"
+          else
+            echo "::error::Could not query origin for gh-pages (ls-remote exit $rc); refusing to continue, since assuming an empty branch would delete published docs"
+            exit 1
+          fi
+      - name: Build versioned docs
+        env:
+          PYTHONUNBUFFERED: "1"
+        # Builds only the latest release's docs, then assembles ./site with every
+        # prior version copied from gh-pages, a `latest` alias, and a redirect.
+        run: uv run --no-default-groups --group docs python tools/build_docs.py site
+      - name: Deploy to GitHub Pages
+        # Publishes the assembled ./site to gh-pages. The action does its own git
+        # auth from the token input (default github.token) without writing it to
+        # .git/config, so the checkout above keeps persist-credentials: false.
+        # sphinx.ext.githubpages emits .nojekyll so _static/ is served.
+        uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445  # v4.9.0
+        with:
+          folder: site
+          # Preserve the PR preview tree (pr-preview/**); the numeric version
+          # directories (e.g. 0.3/) are re-supplied in ./site each run. Disable
+          # force-push so a concurrent preview deploy is not clobbered. See
+          # ADR-010 / ADR-027.
+          clean-exclude: pr-preview/**
+          force: false
