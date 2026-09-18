@@ -59,7 +59,25 @@ jobs:
         # the same tag always renders the same docs output (reproducible-builds.org).
         run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
       - name: Fetch gh-pages branch
-        run: git fetch origin gh-pages:gh-pages || echo "gh-pages does not exist yet"
+        # build_docs.py preserves already-published versions from gh-pages, and the
+        # deploy below cleans the branch (keeping only pr-preview/**). A swallowed
+        # fetch error would therefore look identical to "no prior versions" and
+        # delete every published version directory. Distinguish the two: exit 2
+        # from `ls-remote --exit-code` means the ref genuinely does not exist yet
+        # (the first release); anything else is a real failure and must stop here.
+        run: |
+          set +e
+          git ls-remote --exit-code --heads origin gh-pages >/dev/null 2>&1
+          rc=$?
+          set -e
+          if [ "$rc" -eq 0 ]; then
+            git fetch origin gh-pages:gh-pages
+          elif [ "$rc" -eq 2 ]; then
+            echo "gh-pages does not exist yet — first release, nothing to preserve"
+          else
+            echo "::error::Could not query origin for gh-pages (ls-remote exit $rc); refusing to continue, since assuming an empty branch would delete published docs"
+            exit 1
+          fi
       - name: Build versioned docs
         env:
           PYTHONUNBUFFERED: "1"

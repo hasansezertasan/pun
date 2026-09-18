@@ -69,6 +69,11 @@ contexts as required (the names are the **check runs**, not the workflow files):
   coverage gates, style, hooks, doctest and installed-CLI jobs. Without it the
   four checks above are all that is required, so a pull request whose test suite
   failed can still be merged.
+- ``Deploy docs preview`` — the documentation build (``docs-preview.yml``). It is
+  the only job on a pull request that runs ``docs/check_warnings.py``: ``check``
+  rolls up ``docs-doctest``, which is the doctest builder and has no warning
+  gate. Without this context a pull request introducing broken references or
+  other disallowed Sphinx warnings merges with every required check green.
 
 **[AGENT]**
 
@@ -79,7 +84,7 @@ contexts as required (the names are the **check runs**, not the workflow files):
    {
      "required_status_checks": {
        "strict": true,
-       "contexts": ["Validate PR title", "Validate branch name", "Verify linked issue", "Task Completed Checker", "check"]
+       "contexts": ["Validate PR title", "Validate branch name", "Verify linked issue", "Task Completed Checker", "check", "Deploy docs preview"]
      },
      "enforce_admins": null,
      "required_pull_request_reviews": null,
@@ -92,7 +97,7 @@ contexts as required (the names are the **check runs**, not the workflow files):
 .. code-block:: sh
 
    gh api repos/hasansezertasan/pun/branches/main/protection \
-     --jq '(.required_status_checks.strict == true) and ((["Validate PR title","Validate branch name","Verify linked issue","Task Completed Checker","check"] - (.required_status_checks.contexts // [])) == [])' | grep -qx true
+     --jq '(.required_status_checks.strict == true) and ((["Validate PR title","Validate branch name","Verify linked issue","Task Completed Checker","check","Deploy docs preview"] - (.required_status_checks.contexts // [])) == [])' | grep -qx true
 
 UI equivalent: **Settings → Branches → Add branch ruleset** (or **Add rule** for
 ``main``) — enable **Require status checks to pass before merging**, then search

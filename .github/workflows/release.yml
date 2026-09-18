@@ -1,6 +1,16 @@
 ---
 name: Release
 on:
+  # workflow_dispatch is load-bearing, not a convenience: finalize-release
+  # re-dispatches this workflow via `gh workflow run` to clear a phantom release
+  # PR, and that API requires the trigger to exist. It is also the documented
+  # exception to GITHUB_TOKEN loop-prevention, which is why no PAT is needed.
+  #
+  # It is a privilege-escalation surface — a manual run executes the workflow
+  # file from the *selected* branch, so an edited copy on an unprotected branch
+  # could otherwise reach the `id-token: write` publish job. That is contained by
+  # the `publish` environment's deployment-branch policy (main only), which
+  # GitHub enforces outside the workflow file and a branch edit cannot bypass.
   workflow_dispatch:
   push:
     branches:
@@ -259,9 +269,25 @@ jobs:
         # commit always renders the same docs output (reproducible-builds.org).
         run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
       - name: Fetch gh-pages branch
-        # build_docs.py preserves already-published versions from gh-pages; make
-        # the branch available locally (no-op on the very first release).
-        run: git fetch origin gh-pages:gh-pages || echo "gh-pages does not exist yet"
+        # build_docs.py preserves already-published versions from gh-pages, and the
+        # deploy below cleans the branch (keeping only pr-preview/**). A swallowed
+        # fetch error would therefore look identical to "no prior versions" and
+        # delete every published version directory. Distinguish the two: exit 2
+        # from `ls-remote --exit-code` means the ref genuinely does not exist yet
+        # (the first release); anything else is a real failure and must stop here.
+        run: |
+          set +e
+          git ls-remote --exit-code --heads origin gh-pages >/dev/null 2>&1
+          rc=$?
+          set -e
+          if [ "$rc" -eq 0 ]; then
+            git fetch origin gh-pages:gh-pages
+          elif [ "$rc" -eq 2 ]; then
+            echo "gh-pages does not exist yet — first release, nothing to preserve"
+          else
+            echo "::error::Could not query origin for gh-pages (ls-remote exit $rc); refusing to continue, since assuming an empty branch would delete published docs"
+            exit 1
+          fi
       - name: Build versioned docs
         env:
           PYTHONUNBUFFERED: "1"
