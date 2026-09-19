@@ -120,7 +120,7 @@ style = [
   "sphinx-lint==1.0.2",
   "taplo==0.9.3",
   "ty==0.0.82",
-  "typos==1.49.0",
+  "typos==1.50.2",
   "zuban==0.9.1",
 ]
 test = [
