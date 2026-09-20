@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="amber" data-content_root="./">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Modules - pun</title><link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Configuration" href="configuration.html" /><link rel="prev" title="CLI reference" href="cli-reference.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="_static/pygments.css?v=e1a1ceaf" />
+    <link rel="stylesheet" type="text/css" href="_static/shibuya.css?v=2ceb65ce" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/autodoc_pydantic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_paramlinks.css" />
+    <link media="print" rel="stylesheet" type="text/css" href="_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    
+  <meta property="og:type" content="website"/><meta property="og:title" content="Modules"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="index.html">
+      
+      
+      <strong>pun</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/hasansezertasan/pun" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli-reference.html">CLI reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Maintainer guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="maintaining/setup.html">Repository setup</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#core-pun-core">Core (<code class="docutils literal notranslate"><span class="pre">pun.core</span></code>)</a><ul>
+<li><a class="reference internal" href="#pun.core.config.Settings"><code class="docutils literal notranslate"><span class="pre">Settings</span></code></a><ul>
+<li><a class="reference internal" href="#pun.core.config.Settings.debug"><code class="docutils literal notranslate"><span class="pre">Settings.debug</span></code></a></li>
+<li><a class="reference internal" href="#pun.core.config.Settings.log_level"><code class="docutils literal notranslate"><span class="pre">Settings.log_level</span></code></a></li>
+<li><a class="reference internal" href="#pun.core.config.Settings.config_dir"><code class="docutils literal notranslate"><span class="pre">Settings.config_dir</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pun.core.config.get_settings"><code class="docutils literal notranslate"><span class="pre">get_settings()</span></code></a></li>
+<li><a class="reference internal" href="#pun.core.dirs.HOME_IS_RESOLVABLE"><code class="docutils literal notranslate"><span class="pre">HOME_IS_RESOLVABLE</span></code></a></li>
+<li><a class="reference internal" href="#pun.core.dirs.ROOT_FOLDER_NAME"><code class="docutils literal notranslate"><span class="pre">ROOT_FOLDER_NAME</span></code></a></li>
+<li><a class="reference internal" href="#pun.core.dirs.ROOT_FOLDER_PATH"><code class="docutils literal notranslate"><span class="pre">ROOT_FOLDER_PATH</span></code></a></li>
+<li><a class="reference internal" href="#pun.core.dirs.LOG_FILE_PATH"><code class="docutils literal notranslate"><span class="pre">LOG_FILE_PATH</span></code></a></li>
+<li><a class="reference internal" href="#pun.core.dirs.CONFIG_FILE_PATH"><code class="docutils literal notranslate"><span class="pre">CONFIG_FILE_PATH</span></code></a></li>
+<li><a class="reference internal" href="#pun.core.logging_setup.get_logger"><code class="docutils literal notranslate"><span class="pre">get_logger()</span></code></a></li>
+<li><a class="reference internal" href="#pun.core.logging_setup.setup_logger"><code class="docutils literal notranslate"><span class="pre">setup_logger()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utilities-pun-utils">Utilities (<code class="docutils literal notranslate"><span class="pre">pun.utils</span></code>)</a></li>
+<li><a class="reference internal" href="#cli-pun-cli">CLI (<code class="docutils literal notranslate"><span class="pre">pun.cli</span></code>)</a><ul>
+<li><a class="reference internal" href="#pun.cli.app.info"><code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
+<li><a class="reference internal" href="#pun.cli.app.interactive"><code class="docutils literal notranslate"><span class="pre">interactive()</span></code></a></li>
+<li><a class="reference internal" href="#pun.cli.app.show_version"><code class="docutils literal notranslate"><span class="pre">show_version()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tui-pun-tui">TUI (<code class="docutils literal notranslate"><span class="pre">pun.tui</span></code>)</a><ul>
+<li><a class="reference internal" href="#pun.tui.app.TuiDisplayError"><code class="docutils literal notranslate"><span class="pre">TuiDisplayError</span></code></a></li>
+<li><a class="reference internal" href="#pun.tui.app.build_info_message"><code class="docutils literal notranslate"><span class="pre">build_info_message()</span></code></a></li>
+<li><a class="reference internal" href="#pun.tui.app.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">pun</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Modules</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue" role="main">
+          <section id="modules">
+<h1>Modules<a class="headerlink" href="#modules" title="Link to this heading">#</a></h1>
+<p>An overview of the packages that make up <code class="docutils literal notranslate"><span class="pre">pun</span></code>.
+The API reference below is generated automatically from the source docstrings.</p>
+<section id="core-pun-core">
+<h2>Core (<code class="docutils literal notranslate"><span class="pre">pun.core</span></code>)<a class="headerlink" href="#core-pun-core" title="Link to this heading">#</a></h2>
+<p>Always-included infrastructure.</p>
+<p id="module-pun.core.config">Configurations for the project.</p>
+<dl class="py class pydantic_settings">
+<dt class="sig sig-object py" id="pun.core.config.Settings">
+<em class="property"><span class="pre">pydantic</span> <span class="pre">settings</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pun.core.config.</span></span><span class="sig-name descname"><span class="pre">Settings</span></span><a class="reference internal" href="_modules/pun/core/config.html#Settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pun.core.config.Settings" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pydantic.dev/docs/validation/latest/api/pydantic_settings/#pydantic_settings.BaseSettings" title="(in Pydantic v0.0.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSettings</span></code></a></p>
+<p>Application settings using pydantic-settings.</p>
+<p>Settings can be configured via environment variables or .env file.
+All settings are prefixed with the project name.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<cite>ValidationError</cite>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><cite>self</cite> is explicitly positional-only to allow <cite>self</cite> as a field name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Config<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>extra</strong>: <em>str = ignore</em></p></li>
+<li><p><strong>env_prefix</strong>: <em>str = PUN_</em></p></li>
+<li><p><strong>env_file</strong>: <em>str = .env</em></p></li>
+<li><p><strong>env_file_encoding</strong>: <em>str = utf-8</em></p></li>
+</ul>
+</dd>
+<dt class="field-even">Fields<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#pun.core.config.Settings.config_dir" title="pun.core.config.Settings.config_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">config_dir</span> <span class="pre">(Path)</span></code></a></p></li>
+<li><p><a class="reference internal" href="#pun.core.config.Settings.debug" title="pun.core.config.Settings.debug"><code class="xref py py-obj docutils literal notranslate"><span class="pre">debug</span> <span class="pre">(bool)</span></code></a></p></li>
+<li><p><a class="reference internal" href="#pun.core.config.Settings.log_level" title="pun.core.config.Settings.log_level"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log_level</span> <span class="pre">(str)</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py" id="pun.core.config.Settings.debug">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">debug</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#pun.core.config.Settings.debug" title="Link to this definition">#</a></dt>
+<dd><p>Enable debug mode</p>
+</dd></dl>
+
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py" id="pun.core.config.Settings.log_level">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">log_level</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'INFO'</span></em><a class="headerlink" href="#pun.core.config.Settings.log_level" title="Link to this definition">#</a></dt>
+<dd><p>Logging level</p>
+</dd></dl>
+
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py" id="pun.core.config.Settings.config_dir">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">config_dir</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">PosixPath('/home/runner/.pun')</span></em><a class="headerlink" href="#pun.core.config.Settings.config_dir" title="Link to this definition">#</a></dt>
+<dd><p>Configuration directory</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pun.core.config.get_settings">
+<span class="sig-prename descclassname"><span class="pre">pun.core.config.</span></span><span class="sig-name descname"><span class="pre">get_settings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pun/core/config.html#get_settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pun.core.config.get_settings" title="Link to this definition">#</a></dt>
+<dd><p>Return the cached settings singleton.</p>
+<p>Cached so all callers share one instance; tests can reset or override it
+via <code class="docutils literal notranslate"><span class="pre">get_settings.cache_clear()</span></code> instead of patching an import-time value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The cached settings instance.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pun.core.config.Settings" title="pun.core.config.Settings">Settings</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-pun.core.dirs">Directory configurations for the project.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="pun.core.dirs.HOME_IS_RESOLVABLE">
+<span class="sig-prename descclassname"><span class="pre">pun.core.dirs.</span></span><span class="sig-name descname"><span class="pre">HOME_IS_RESOLVABLE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#pun.core.dirs.HOME_IS_RESOLVABLE" title="Link to this definition">#</a></dt>
+<dd><p>Whether the user’s home directory could be resolved at import time.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">False</span></code> the project has no user-owned directory to write to, so file
+logging is disabled in <code class="docutils literal notranslate"><span class="pre">core/logging_setup.py</span></code> rather than falling back to a
+predictable shared location.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pun.core.dirs.ROOT_FOLDER_NAME">
+<span class="sig-prename descclassname"><span class="pre">pun.core.dirs.</span></span><span class="sig-name descname"><span class="pre">ROOT_FOLDER_NAME</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'.pun'</span></em><a class="headerlink" href="#pun.core.dirs.ROOT_FOLDER_NAME" title="Link to this definition">#</a></dt>
+<dd><p>Name of the root folder.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pun.core.dirs.ROOT_FOLDER_PATH">
+<span class="sig-prename descclassname"><span class="pre">pun.core.dirs.</span></span><span class="sig-name descname"><span class="pre">ROOT_FOLDER_PATH</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">PosixPath('/home/runner/.pun')</span></em><a class="headerlink" href="#pun.core.dirs.ROOT_FOLDER_PATH" title="Link to this definition">#</a></dt>
+<dd><p>Path to the root folder.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pun.core.dirs.LOG_FILE_PATH">
+<span class="sig-prename descclassname"><span class="pre">pun.core.dirs.</span></span><span class="sig-name descname"><span class="pre">LOG_FILE_PATH</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">PosixPath('/home/runner/.pun/main.log')</span></em><a class="headerlink" href="#pun.core.dirs.LOG_FILE_PATH" title="Link to this definition">#</a></dt>
+<dd><p>Path to the log file.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pun.core.dirs.CONFIG_FILE_PATH">
+<span class="sig-prename descclassname"><span class="pre">pun.core.dirs.</span></span><span class="sig-name descname"><span class="pre">CONFIG_FILE_PATH</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">PosixPath('/home/runner/.pun/config.json')</span></em><a class="headerlink" href="#pun.core.dirs.CONFIG_FILE_PATH" title="Link to this definition">#</a></dt>
+<dd><p>Path to the config file.</p>
+</dd></dl>
+
+<p id="module-pun.core.logging_setup">Set up logging for the project.</p>
+<p>This module configures logging for the project, ensuring that
+log handlers are only added once to prevent duplicate log entries if the
+module is imported multiple times.</p>
+<p>Setup is resilient to a read-only or unavailable <code class="docutils literal notranslate"><span class="pre">$HOME</span></code>: if the log
+directory cannot be created it degrades to console-only logging instead of
+raising, so read-only commands (<code class="docutils literal notranslate"><span class="pre">--help</span></code>, <code class="docutils literal notranslate"><span class="pre">version</span></code>) stay usable.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="pun.core.logging_setup.get_logger">
+<span class="sig-prename descclassname"><span class="pre">pun.core.logging_setup.</span></span><span class="sig-name descname"><span class="pre">get_logger</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pun/core/logging_setup.html#get_logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pun.core.logging_setup.get_logger" title="Link to this definition">#</a></dt>
+<dd><p>Return the cached project logger.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The cached project logger.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Logger" title="(in Python v3.14)">logging.Logger</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pun.core.logging_setup.setup_logger">
+<span class="sig-prename descclassname"><span class="pre">pun.core.logging_setup.</span></span><span class="sig-name descname"><span class="pre">setup_logger</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pun/core/logging_setup.html#setup_logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pun.core.logging_setup.setup_logger" title="Link to this definition">#</a></dt>
+<dd><p>Set up and return the main logger for the project.</p>
+<p>Ensures that handlers are only added once to avoid duplicate log entries
+if this module is imported multiple times.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Configured logger for the project.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Logger" title="(in Python v3.14)">logging.Logger</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="utilities-pun-utils">
+<h2>Utilities (<code class="docutils literal notranslate"><span class="pre">pun.utils</span></code>)<a class="headerlink" href="#utilities-pun-utils" title="Link to this heading">#</a></h2>
+<p>Shared helper functions.</p>
+<p id="module-pun.utils">Utilities package for the project.</p>
+</section>
+<section id="cli-pun-cli">
+<h2>CLI (<code class="docutils literal notranslate"><span class="pre">pun.cli</span></code>)<a class="headerlink" href="#cli-pun-cli" title="Link to this heading">#</a></h2>
+<p>Typer command-line interface exposing <code class="docutils literal notranslate"><span class="pre">version</span></code> and <code class="docutils literal notranslate"><span class="pre">info</span></code> commands.</p>
+<p id="module-pun.cli.app">CLI application for the project.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">pun</span></code> command is the single Typer root. Every enabled
+component other than the primary (CLI &gt; GUI &gt; TUI &gt; web &gt; MCP &gt; worker) is hung
+off it as a lazily-imported subcommand — <code class="docutils literal notranslate"><span class="pre">pun</span> <span class="pre">interactive</span></code>
+(TUI), <code class="docutils literal notranslate"><span class="pre">pun</span> <span class="pre">web</span></code>, <code class="docutils literal notranslate"><span class="pre">pun</span> <span class="pre">mcp</span></code>, … — rather
+than a separate <code class="docutils literal notranslate"><span class="pre">pun-&lt;name&gt;</span></code> console script (see ADR-019).</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="pun.cli.app.info">
+<span class="sig-prename descclassname"><span class="pre">pun.cli.app.</span></span><span class="sig-name descname"><span class="pre">info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pun/cli/app.html#info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pun.cli.app.info" title="Link to this definition">#</a></dt>
+<dd><p>Display information about the pun application.</p>
+<dl class="simple">
+<dt>Show application information:</dt><dd><p>pun info</p>
+</dd>
+<dt>Example output:</dt><dd><p>Application Version: 0.1.0
+Python Version: 3.12.0 (CPython)
+Platform: Darwin</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>typer.Exit</strong> – If the package metadata cannot be found.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pun.cli.app.interactive">
+<span class="sig-prename descclassname"><span class="pre">pun.cli.app.</span></span><span class="sig-name descname"><span class="pre">interactive</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pun/cli/app.html#interactive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pun.cli.app.interactive" title="Link to this definition">#</a></dt>
+<dd><p>Start interactive mode (TUI) for pun.</p>
+<dl class="simple">
+<dt>Launch the terminal user interface:</dt><dd><p>pun interactive</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>typer.Exit</strong> – Propagating the TUI’s exit code.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pun.cli.app.show_version">
+<span class="sig-prename descclassname"><span class="pre">pun.cli.app.</span></span><span class="sig-name descname"><span class="pre">show_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pun/cli/app.html#show_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pun.cli.app.show_version" title="Link to this definition">#</a></dt>
+<dd><p>Show the current version number of pun.</p>
+<dl class="simple">
+<dt>Show the version number:</dt><dd><p>pun version</p>
+</dd>
+<dt>Example output:</dt><dd><p>0.1.0</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>typer.Exit</strong> – If the package metadata cannot be found.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="tui-pun-tui">
+<h2>TUI (<code class="docutils literal notranslate"><span class="pre">pun.tui</span></code>)<a class="headerlink" href="#tui-pun-tui" title="Link to this heading">#</a></h2>
+<p>Textual terminal user interface.</p>
+<p id="module-pun.tui.app">TUI application for the project.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pun.tui.app.TuiDisplayError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pun.tui.app.</span></span><span class="sig-name descname"><span class="pre">TuiDisplayError</span></span><a class="reference internal" href="_modules/pun/tui/app.html#TuiDisplayError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pun.tui.app.TuiDisplayError" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+<p>Raised when the TUI cannot be displayed.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pun.tui.app.build_info_message">
+<span class="sig-prename descclassname"><span class="pre">pun.tui.app.</span></span><span class="sig-name descname"><span class="pre">build_info_message</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pun/tui/app.html#build_info_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pun.tui.app.build_info_message" title="Link to this definition">#</a></dt>
+<dd><p>Return a short application information message for display.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A multi-line summary of the project name, version, and platform.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pun.tui.app.main">
+<span class="sig-prename descclassname"><span class="pre">pun.tui.app.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_tui</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pun/tui/app.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pun.tui.app.main" title="Link to this definition">#</a></dt>
+<dd><p>Entry point for the TUI script.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="pun.tui.app.main.params.show_tui"></span><strong>show_tui</strong><a class="paramlink headerlink reference internal" href="#pun.tui.app.main.params.show_tui">¶</a> – When <code class="docutils literal notranslate"><span class="pre">False</span></code>, write the info to stdout instead of starting
+the TUI (useful for headless environments and tests).</p></li>
+<li><p><strong>show_tui</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">0</span></code> on success, <code class="docutils literal notranslate"><span class="pre">1</span></code> if the TUI could not be displayed.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="cli-reference.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">CLI reference</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="configuration.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Configuration</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2026, Hasan Sezer Taşan</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+  <a href="https://github.com/hasansezertasan/pun" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
+    </div>
+  </div>
+</footer>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="_static/togglebutton.js?v=b8b12719"></script>
+      <script src="_static/design-tabs.js?v=f930bc37"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script src="_static/shibuya.js?v=50760d75"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script></body>
+</html>
