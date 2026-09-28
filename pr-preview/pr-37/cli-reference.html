@@ -191,7 +191,8 @@ typer.Exit: If the package metadata cannot be found.</p>
 <p>Launch the terminal user interface:
 pun interactive</p>
 <p>Raises:
-typer.Exit: Propagating the TUI’s exit code.</p>
+typer.Exit: Propagating the TUI’s exit code, or code 1 if a dependency of
+the TUI is missing from this environment.</p>
 <p><strong>Usage</strong>:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">$ </span>pun<span class="w"> </span>interactive<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </span></pre></div>
