@@ -182,7 +182,13 @@ hooks = [{ id = "zizmor" }]
 [[repos]]
 repo = "https://github.com/adrienverge/yamllint.git"
 rev = "v1.38.0"
-hooks = [{ id = "yamllint", args = ["-c", ".github/yamllint.yaml"] }]
+# `.copier-answers.yml` is excluded for the same reason the yamlfmt hook below
+# excludes it: copier owns the file ("NEVER EDIT MANUALLY") and writes block
+# sequences unindented, which yamllint's `indentation` rule rejects. The only
+# way to satisfy the linter would be to hand-edit a file the next `copier
+# update` overwrites, so the gate can only ever produce an unfixable failure —
+# it fires the moment any answer is a list (e.g. `ai_rulez_presets`).
+hooks = [{ id = "yamllint", exclude = "^\\.copier-answers\\.yml$", args = ["-c", ".github/yamllint.yaml"] }]
 
 [[repos]]
 repo = "https://github.com/DavidAnson/markdownlint-cli2"
@@ -231,5 +237,5 @@ hooks = [
   # itself on PATH, which local contributors have and the CI `hooks` job supplies
   # via jdx/mise-action.
   { id = "ghalint", name = "ghalint", entry = "mise exec -- ghalint run", language = "system", pass_filenames = false, always_run = true },
-  { id = "pytest", name = "Pytest Test Runner", entry = "uv run --locked pytest tests", language = "system", pass_filenames = false, always_run = true },
+  { id = "pytest", name = "Pytest Test Runner", entry = "uv run --locked pytest", language = "system", pass_filenames = false, always_run = true },
 ]

@@ -32,6 +32,7 @@ New feature code goes inside an existing layer:
 
 | What you are adding | Where it goes |
 | ------------------- | ------------- |
+| Data every interface reports (version, runtime info, ...) | `core/app.py` |
 | Business logic, domain models, app behavior | `core/` |
 | External integrations (APIs, storage, brokers) | `core/` |
 | Config / settings | `core/config.py` |
@@ -43,6 +44,10 @@ The layering is enforced in CI by import-linter (`[tool.importlinter]` in
 `pyproject.toml`), whose contract is **exhaustive**: a subpackage not listed in
 its `layers` fails `tox run -e style`. `core` may import `utils`; `utils` imports
 nothing internal.
+`core/app.py` holds the version/runtime payload every interface renders; each
+interface is an adapter over it and decides only how to transport, present, and
+fail. Put a fact that more than one interface must report there, not in one of
+them.
 `tui` may import `core`.
 `cli` sits above them as the orchestrator: it lazy-imports each one to launch it
 as a subcommand.

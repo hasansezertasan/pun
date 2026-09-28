@@ -82,7 +82,10 @@ requires-python = ">=3.10"
 # unconditionally when enabled.
 dependencies = [
   "typer>=0.20.0",
-  "textual>=0.50.0",
+  # >=6.0.0 for `Static.content`, which the headless pilot test asserts on
+  # (ADR-035). Earlier releases expose only `Static.renderable`, and 6.0.0
+  # onward returns None for it — there is no spelling that spans both.
+  "textual>=6.0.0",
   "typing-extensions>=4.4.0",
   "pydantic-settings>=2.0.0",
 ]
@@ -122,6 +125,15 @@ style = [
   "ty==0.0.82",
   "typos==1.50.2",
   "zuban==0.10.0",
+]
+# semgrep is deliberately its own group rather than part of `style`: `dev`
+# includes `style` wholesale, so a plain `uv sync` — and every Windows/macOS
+# cell in ci.yml, which runs `uv run --locked tox run` — would download and
+# unpack ~215 MB (the wheel bundles a native semgrep-core) for a tool that only
+# ever executes in the Linux-only `style` job. The tox `style` env lists this
+# group explicitly. Still a single version source, same as every other pin.
+sast = [
+  "semgrep==1.177.0",
 ]
 test = [
   "coverage-enable-subprocess==1.0",
@@ -230,7 +242,7 @@ name = "cz_conventional_commits"
 
 [tool.pytest.ini_options]
 # addopts = "-rXs --strict-config --strict-markers"
-addopts = "-v --tb=short"
+addopts = "-v --tb=short --doctest-glob=README.md"
 # One marker per component, auto-applied by tests/conftest.py from each test's
 # top-level tests/<dir>/. Enables `pytest -m web` locally and per-component CI
 # jobs (issue #160, ADR-028); `integration` (ADR-008) is one axis of the scheme.
@@ -239,11 +251,16 @@ markers = [
   "cli: CLI component tests",
   "tui: TUI component tests",
 ]
-asyncio_mode = "auto"
+# Strict mode requires explicit @pytest.mark.asyncio annotations, making async
+# test collection intentional instead of silently accepting unmarked coroutines.
+asyncio_mode = "strict"
 filterwarnings = [
   "error",
 ]
-testpaths = ["tests"]
+# The project README is the deliberately small Markdown doctest surface. Other
+# Markdown files can use illustrative snippets without becoming pytest inputs.
+testpaths = ["tests", "README.md"]
+doctest_optionflags = "ELLIPSIS IGNORE_EXCEPTION_DETAIL NORMALIZE_WHITESPACE"
 xfail_strict = true
 
 
@@ -302,6 +319,11 @@ ignore_decorators = [
   "@app.after_startup",
   "@app.after_shutdown",
   "@server.call_tool",
+  # A fixture used through ``@pytest.mark.usefixtures("name")`` -- or from
+  # another test module -- is only ever named in a string, which vulture cannot
+  # see. Unused fixtures are caught properly by ``pytest --dead-fixtures`` in
+  # the tox ``style`` env, so this delegates rather than suppresses.
+  "@pytest.fixture",
 ]
 # Public API surfaces vulture cannot see being used: ``main`` entry points are
 # referenced only via pyproject scripts, ``model_config`` is consumed by
@@ -310,7 +332,7 @@ ignore_decorators = [
 # names (CSS/compose/on_mount/title/BINDINGS) are invoked by the TUI framework,
 # and ``pytestmark``/``pytest_*`` (conftest hooks) are consumed by pytest at
 # collection time.
-ignore_names = ["CONFIG_FILE_PATH", "logger", "main", "model_config", "pytest_*", "CSS", "compose", "on_mount", "title", "BINDINGS"]
+ignore_names = ["CONFIG_FILE_PATH", "logger", "main", "model_config", "pytest_*", "collect_ignore_glob", "CSS", "compose", "on_mount", "title", "BINDINGS"]
 min_confidence = 60
 paths = ["src", "tests"]
 
@@ -506,9 +528,11 @@ disable = [
   "missing-function-docstring", # C0116
   "too-few-public-methods", # R0903 — trips dataclasses / config / Protocol classes
   # C0415 — the cli->tui/gui/web dispatch, and each component's own heavy or
-  # platform-conditional import (tkinter, textual, uvicorn, the worker's uvloop
-  # probe), are deliberately lazy so import-linter's layering contract holds and
-  # a framework is only imported when the code path that needs it actually runs.
+  # platform-conditional import (tkinter, uvicorn, the worker's uvloop probe),
+  # are deliberately lazy so import-linter's layering contract holds and a
+  # framework is only imported when the code path that needs it actually runs.
+  # Textual is the exception: the TUI imports it at module scope so `InfoApp`
+  # can be defined there and driven by the headless pilot (ADR-035).
   "import-outside-toplevel",
   # W0706 — the generated TUI entry point explicitly re-raises
   # KeyboardInterrupt/SystemExit ahead of a broad `except Exception` to make the
@@ -644,6 +668,22 @@ commands = [
   [
     "lint-imports",
   ],
+  # Rules-database SAST. Deliberately style-env-only (like ty/pyrefly/zuban) and
+  # not a prek hook: semgrep keeps no on-disk rule cache, so a pre-commit hook
+  # would make a registry request on every `git commit`. The ruleset is named
+  # explicitly rather than `--config auto` so rule selection does not depend on
+  # language auto-detection; it is still fetched from the registry, which is why
+  # this cannot be vendored (see ADR-032). `--error` makes findings blocking;
+  # silence a false positive with a trailing `# nosemgrep: <rule-id>`.
+  [
+    "semgrep",
+    "scan",
+    "--config",
+    "p/python",
+    "--error",
+    "--metrics=off",
+    "src",
+  ],
   [
     "taplo",
     "lint",
@@ -684,7 +724,7 @@ commands = [
 ]
 # `test` is included so the type checkers that scope tests (e.g. ty) can
 # resolve pytest and other test-only imports.
-dependency_groups = ["style", "test"]
+dependency_groups = ["sast", "style", "test"]
 description = "Run Checkers, Linters and Formatters"
 runner = "uv-venv-runner"
 

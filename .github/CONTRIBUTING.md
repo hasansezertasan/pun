@@ -164,6 +164,11 @@ Common tasks are exposed as mise tasks (`mise run test`, `mise run style`,
 lint/type-check suite is `uv run --locked tox run -e style`, and the fast git
 hook gate is `uv run --locked tox run -e prek`.
 
+GitHub Copilot's coding agent runs `.github/workflows/copilot-setup-steps.yml`
+before it starts work, which installs this same toolchain and syncs dependencies
+in its ephemeral environment. The first sync creates `uv.lock` for a newly
+generated project.
+
 <!-- TODO @hasansezertasan: add any project-specific setup (IDE, services, env vars) -->
 
 ### Debugging

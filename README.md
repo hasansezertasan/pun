@@ -55,6 +55,27 @@ uv tool install pun
 
 Or run it without installing with `uvx pun`. See the [installation docs](https://hasansezertasan.github.io/pun/installation.html) for pipx and from-source options.
 
+### Verify the installation
+
+The package root is importable after installation:
+
+```pycon
+>>> from pun import __doc__
+>>> isinstance(__doc__, str)
+True
+
+```
+
+<!--
+TODO @hasansezertasan: Add project-specific, runnable examples here.
+
+pytest runs the pycon examples in this file (--doctest-glob=README.md).
+doctest cannot see Markdown and ends an example's expected output at the first
+blank line, so leave a blank line before every closing fence -- as the example
+above does. Without it the closing delimiter is read as part of the expected
+output and the example fails ("Expected: 2 / Got: 2"). Examples with no output
+line at all need the blank line too.
+-->
 ## Usage
 
 ### CLI
