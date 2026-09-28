@@ -613,8 +613,8 @@ jobs:
       - name: Decide whether the needed jobs succeeded or failed
         uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe  # v1.2.2
         with:
-          # The cli/tui fan-out is path-filtered by `changes`, so those jobs are
-          # legitimately skipped when only another component (or nothing under
-          # src/tests) changed. Real failures still fail the gate.
-          allowed-skips: test-cli, test-tui, coverage-cli, coverage-tui
+          # alls-green counts a skipped job as a failure unless it is listed
+          # here. These jobs are path-gated by `changes`, so they skip whenever
+          # their component (and core) is untouched. Real failures still fail.
+          allowed-skips: test-cli, coverage-cli, test-tui, coverage-tui
           jobs: ${{ toJSON(needs) }}
