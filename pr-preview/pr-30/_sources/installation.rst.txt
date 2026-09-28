@@ -25,6 +25,24 @@ Or run it without installing:
 
    uvx pun
 
+Verify release provenance
+-------------------------
+
+Public-repository release distributions include Sigstore-signed build
+provenance. After downloading a wheel or source distribution, verify that the
+release workflow built it from ``main`` in this repository:
+
+.. code-block:: sh
+
+   gh attestation verify <downloaded-distribution> \
+     --repo hasansezertasan/pun \
+     --signer-workflow hasansezertasan/pun/.github/workflows/release.yml \
+     --source-ref refs/heads/main
+
+Artifact attestations are available for public repositories on current GitHub
+plans. Private and internal repositories require GitHub Enterprise Cloud and
+the repository variable ``ENABLE_PRIVATE_ATTESTATIONS=true``.
+
 From source
 -----------
 

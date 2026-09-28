@@ -56,6 +56,10 @@ Branch protection
 Protect ``main`` so a PR can only merge once its checks pass. Mark these check
 contexts as required (the names are the **check runs**, not the workflow files):
 
+- ``check`` — ``ci.yml``'s aggregate gate. It is the single context that covers
+  the tests, the per-component coverage gates, style, hooks and the documentation
+  build; without it a PR whose entire test suite failed still satisfies
+  protection, because the four metadata gates below say nothing about the code.
 - ``Validate PR title`` — the Conventional Commits PR-title lint
   (``check-pr-title.yml``), which release-please depends on.
 - ``Validate branch name`` — the Conventional Branch lint
@@ -64,16 +68,10 @@ contexts as required (the names are the **check runs**, not the workflow files):
 - ``Verify linked issue`` — the linked-issue check (``check-linked-issues.yml``),
   which fails a PR with no linked issue.
 - ``Task Completed Checker`` — the PR task-list gate (``task-completed-check.yml``),
-  which fails while any unticked checkbox remains in the PR description.
-- ``check`` — the aggregate CI gate (``ci.yml``), which rolls up the tests,
-  coverage gates, style, hooks, doctest and installed-CLI jobs. Without it the
-  four checks above are all that is required, so a pull request whose test suite
-  failed can still be merged.
-- ``Deploy docs preview`` — the documentation build (``docs-preview.yml``). It is
-  the only job on a pull request that runs ``docs/check_warnings.py``: ``check``
-  rolls up ``docs-doctest``, which is the doctest builder and has no warning
-  gate. Without this context a pull request introducing broken references or
-  other disallowed Sphinx warnings merges with every required check green.
+  which fails while any unticked checkbox remains in the PR description. This is
+  the name of the **check run** the action publishes, not of the job around it
+  (``Check PR task list``) — the job is green even when boxes are unticked, so
+  requiring the job name would not gate anything.
 
 **[AGENT]**
 
@@ -84,7 +82,7 @@ contexts as required (the names are the **check runs**, not the workflow files):
    {
      "required_status_checks": {
        "strict": true,
-       "contexts": ["Validate PR title", "Validate branch name", "Verify linked issue", "Task Completed Checker", "check", "Deploy docs preview"]
+       "contexts": ["check", "Validate PR title", "Validate branch name", "Verify linked issue", "Task Completed Checker"]
      },
      "enforce_admins": null,
      "required_pull_request_reviews": null,
@@ -97,12 +95,53 @@ contexts as required (the names are the **check runs**, not the workflow files):
 .. code-block:: sh
 
    gh api repos/hasansezertasan/pun/branches/main/protection \
-     --jq '(.required_status_checks.strict == true) and ((["Validate PR title","Validate branch name","Verify linked issue","Task Completed Checker","check","Deploy docs preview"] - (.required_status_checks.contexts // [])) == [])' | grep -qx true
+     --jq '(.required_status_checks.strict == true) and ((["check","Validate PR title","Validate branch name","Verify linked issue","Task Completed Checker"] - (.required_status_checks.contexts // [])) == [])' | grep -qx true
 
 UI equivalent: **Settings → Branches → Add branch ruleset** (or **Add rule** for
 ``main``) — enable **Require status checks to pass before merging**, then search
-for and add the contexts above. The contexts only appear in the picker
+for and add the five contexts above. The contexts only appear in the picker
 after each check has run at least once.
+
+.. _setup-first-pr:
+
+Apply protection *after* the first merge
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``check-pr-title.yml``, ``check-branch-name.yml``, ``check-linked-issues.yml``
+and ``task-completed-check.yml`` all trigger on ``pull_request_target``, which
+GitHub sources from the **base** branch. On a repository adopting this template
+``main`` does not have those workflows yet, so the very first pull request — the
+one that adds them — reports none of those four contexts and is permanently
+blocked by the protection above. (``check`` is unaffected: ``ci.yml`` runs on
+plain ``pull_request``, which GitHub sources from the *head* branch.)
+
+So either apply branch protection only *after* the scaffolding has landed on
+``main``, or admin-merge that first pull request. From the second PR onwards the
+workflows exist on the base branch and every context reports normally.
+
+.. _setup-release-pr-checks:
+
+Release PRs need a manual nudge
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``release.yml`` runs ``release-please`` with the implicit ``GITHUB_TOKEN``, and
+**events created with that token do not start workflow runs** — the same rule
+that stops a ``release: published`` event from triggering ``gh-pages.yml``. So
+the release pull request opens with none of the required contexts reported and
+cannot merge on its own. (Renovate PRs are unaffected: Renovate authenticates as
+a GitHub App, not as ``GITHUB_TOKEN``.)
+
+This is not a setup step — there is nothing to configure and no ``[CHECK]``.
+It is the recurring workaround, recorded here because it is not discoverable
+from the workflows themselves: **close and reopen the release pull request.**
+Every required context listens for ``reopened``, so reopening it as yourself
+fires all of them under your identity. Do not just edit the PR body — that only
+re-fires the three ``pull_request_target`` checks that listen for ``edited``,
+missing ``check-branch-name.yml`` and ``ci.yml``.
+
+This is a deliberate trade, not an oversight: the alternative is giving
+``release.yml`` a PAT or GitHub App token, which is a standing credential with
+write access to ``main``. One manual reopen per release is the cheaper side.
 
 Let Actions open the release PR
 -------------------------------
@@ -140,6 +179,37 @@ immutability** (currently a UI-only toggle).
 **[CHECK]** No scriptable check — confirm under **Settings → General** that
 release immutability is enabled.
 
+Dependency graph
+----------------
+
+``dependency-review.yml`` diffs a pull request's dependency manifests against the
+base branch and fails it on a newly introduced vulnerable or disallowed-license
+dependency. It reads GitHub's dependency graph for the repository; with the graph
+off, the action does not pass vacuously — it errors, so the check is red on the
+first pull request:
+
+.. code-block:: text
+
+   Dependency review is not supported on this repository.
+   Please ensure that Dependency graph is enabled
+
+**[HUMAN]** Enable it under **Settings → Advanced Security** (**Code security and
+analysis** on the older settings layout) → **Dependency graph**. UI-only:
+``PATCH /repos/{owner}/{repo}`` accepts
+``security_and_analysis[dependency_graph][status]`` and silently no-ops, so there
+is no ``[AGENT]`` command.
+
+**[CHECK]** Ask the dependency-review API itself — the same endpoint
+``dependency-review-action`` calls, so a clean exit here is exactly the state the
+workflow needs. It answers ``403`` while the graph is off. A self-compare needs
+no second ref, so this works on a repository with nothing merged yet. (Not the
+SBOM export, which also tracks the graph but is closing down on 2026-11-13.)
+
+.. code-block:: sh
+
+   gh api --silent \
+     repos/hasansezertasan/pun/dependency-graph/compare/main...main
+
 PyPI trusted publishing
 -----------------------
 
@@ -160,6 +230,76 @@ tokens or secrets to manage).
 
 **[CHECK]** No scriptable check — confirm the pending publisher is listed at
 `PyPI → Publishing <https://pypi.org/manage/account/publishing/>`_.
+
+Restrict the ``publish`` environment to ``main``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``pypi-publish`` job holds ``id-token: write`` against the ``publish``
+environment. The ``build`` job uses the same environment while minting build
+provenance attestations. Because ``release.yml`` carries ``workflow_dispatch``,
+a manual run
+executes the workflow file **from the branch you select**, so the
+``release_created`` guard inside the file is not a mitigation: anyone with write
+access could push a ``release.yml`` with that guard removed to an unprotected
+branch, dispatch it, mint a PyPI trusted-publishing token and publish arbitrary
+content. Branch protection on ``main`` is never consulted on that path, and
+removing the trigger is not an option — ``finalize-release`` re-dispatches this
+workflow with ``gh workflow run`` to reconcile the next release PR.
+
+The containment is the environment's **deployment branch policy**, which GitHub
+evaluates outside the workflow file, so editing the file cannot bypass it. Do
+this before the first release: GitHub auto-creates the environment
+**unprotected** on first use, and a repo scaffolded over an existing project may
+also be carrying a stale, unreferenced publish environment from its previous
+workflow.
+
+**[AGENT]** The branch/tag policies are a *separate collection* — switching the
+environment to ``custom_branch_policies`` does not clear whatever is already in
+it, and adding ``main`` only appends. A pre-existing wildcard (say ``*``, the
+default someone clicks through in the UI) would stay eligible alongside it, so
+delete every policy first and re-add exactly one:
+
+.. code-block:: sh
+
+   gh api -X PUT repos/hasansezertasan/pun/environments/publish \
+     -F 'deployment_branch_policy[protected_branches]=false' \
+     -F 'deployment_branch_policy[custom_branch_policies]=true'
+   ids="$(gh api --paginate repos/hasansezertasan/pun/environments/publish/deployment-branch-policies \
+     --jq '.branch_policies[].id')"
+   for id in $ids; do
+     gh api -X DELETE "repos/hasansezertasan/pun/environments/publish/deployment-branch-policies/$id"
+   done
+   gh api -X POST repos/hasansezertasan/pun/environments/publish/deployment-branch-policies \
+     -f name=main -f type=branch
+
+Artifact attestations are enabled automatically for public repositories. For a
+private or internal repository on GitHub Enterprise Cloud, opt in after
+confirming artifact attestations are available:
+
+.. code-block:: sh
+
+   gh variable set ENABLE_PRIVATE_ATTESTATIONS --body true --repo hasansezertasan/pun
+
+**[CHECK]** The collection must be *exactly* one branch policy named ``main`` —
+asserting only that ``main`` is present would pass with a wildcard sitting next
+to it. Compare the *accumulated* lines rather than folding the comparison into
+``--jq``: under ``--paginate`` the jq expression runs once **per page**, so a
+per-page ``== ["branch:main"]`` prints ``true`` for a final page holding only
+``main`` even while an earlier page still carries a wildcard — and a
+``grep -qx true`` over that output would accept it. (``--slurp`` is the
+documented way to wrap every page into one array, but ``gh`` rejects it
+together with ``--jq``.)
+
+.. code-block:: sh
+
+   policies="$(gh api --paginate repos/hasansezertasan/pun/environments/publish/deployment-branch-policies \
+     --jq '.branch_policies[] | "\(.type // "branch"):\(.name)"')"
+   [ "$policies" = "branch:main" ]
+
+UI equivalent: **Settings → Environments → publish → Deployment branches and
+tags** — choose **Selected branches and tags**, delete every rule already listed
+(including any ``*``), then add ``main``. While you are there, delete any
+leftover environment a previous release workflow created.
 
 Coverage reporting (Codecov)
 ----------------------------
