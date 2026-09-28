@@ -1,5 +1,4 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>hasansezertasan/renovate-config:python"],
-  "constraintsFiltering": "strict"
+  "extends": ["github>hasansezertasan/renovate-config:python"]
 }
