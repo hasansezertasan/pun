@@ -30,7 +30,19 @@ from packaging.version import InvalidVersion, Version
 # Version-directory granularity, baked from the Copier ``docs_version_granularity``
 # answer. Edit here only if you want to change how release versions map to docs
 # directories: "minor" -> X.Y, "major" -> X, "full" -> X.Y.Z.
-VERSION_GRANULARITY = "minor"
+DEFAULT_VERSION_GRANULARITY = "minor"
+
+# A manual redeploy (gh-pages.yml) rebuilds an already-published release tag
+# with *this* revision's script, so it passes the granularity baked into that
+# tag through the environment. The slug a release occupies is a property of the
+# release: rebuilding 1.2.3 under "1" because the answer has since changed from
+# minor to major would publish it a second time beside the live 1.2/ directory
+# and repoint `latest` at the duplicate. Unset everywhere else, so a normal
+# release build uses the answer above.
+VERSION_GRANULARITY = (
+    os.environ.get("DOCS_VERSION_GRANULARITY", "").strip()
+    or DEFAULT_VERSION_GRANULARITY
+)
 
 DOCS_DIR = Path("docs")
 HTML_DIR = DOCS_DIR / "_build" / "html"
@@ -43,6 +55,22 @@ GH_PAGES_REFS = ("gh-pages", "origin/gh-pages")
 
 # Raised when the required release version is not supplied via the environment.
 _MISSING_VERSION_MSG = "DOCS_BUILD_VERSION is required"
+
+# Raised when a published version listed on gh-pages cannot be read back. Never
+# swallow this: the assembled site is what the deploy publishes, so an omitted
+# version is a version deleted from the documentation archive.
+_PRESERVE_FAILED_MSG = (
+    "could not read published docs for {name!r} from {ref}; refusing to assemble "
+    "a site that would delete it from gh-pages"
+)
+
+# Raised on an interpreter too old for tarfile's safe extraction filter. The
+# filter landed in 3.12 and was backported to the 3.10.12 / 3.11.4 security
+# releases, so only a long-unpatched 3.10.x or 3.11.x reaches this.
+_NO_TAR_FILTER_MSG = (
+    "this interpreter predates tarfile's `data` extraction filter; upgrade to "
+    "Python 3.10.12+ / 3.11.4+ (or 3.12+) to build the versioned docs site"
+)
 
 _REDIRECT_HTML = """<!DOCTYPE html>
 <html lang="en">
@@ -181,21 +209,24 @@ def build_sphinx() -> None:
     )
 
 
-def preserve_from_gh_pages(name: str, out: Path, ref: str, *, required: bool) -> None:
+def preserve_from_gh_pages(
+    name: str, out: Path, ref: str, *, required: bool = True
+) -> None:
     """Extract the ``name`` subtree from gh-pages into ``out`` (keeping prefix).
 
     Args:
         name: The version-directory (or ``latest``) name to preserve.
         out: The assembled-site output directory to extract into.
         ref: The resolved gh-pages ref to read from.
-        required: Whether ``name`` is known to be published on gh-pages. Version
-            slugs come from ``existing_versions()``, i.e. a ``git ls-tree`` of
-            the branch, so they provably exist and any failure to read one is a
-            real error. The ``latest`` alias is optional and may legitimately be
-            absent.
+        required: Whether an unreadable subtree is fatal. Version slugs come
+            from ``existing_versions()`` — a ``git ls-tree`` of this very ref —
+            so they provably exist, and silently omitting one would make the
+            deploy CLEAN it off gh-pages. Only the ``latest`` alias is genuinely
+            optional.
 
     Raises:
-        RuntimeError: If a published version cannot be read from gh-pages.
+        RuntimeError: If a required subtree cannot be read from ``ref``, or if
+            the interpreter predates ``tarfile``'s ``data`` extraction filter.
     """
     archive = subprocess.run(  # noqa: S603
         ["git", "archive", ref, name],  # noqa: S607
@@ -204,27 +235,19 @@ def preserve_from_gh_pages(name: str, out: Path, ref: str, *, required: bool) ->
     )
     if archive.returncode != 0 or not archive.stdout:
         if required:
-            # Treating this as "absent" would drop the version from the
-            # assembled site, and the deploy cleans gh-pages of everything the
-            # site omits (bar pr-preview/**) — so a transient git failure would
-            # silently delete a published version. Fail the release instead.
-            msg = (
-                f"Could not read published docs version {name!r} from "
-                f"{ref} (git archive exit {archive.returncode}): "
-                f"{archive.stderr.decode(errors='replace').strip()}. "
-                "Refusing to assemble a site without it, since deploying "
-                "would delete it from gh-pages."
-            )
-            raise RuntimeError(msg)
-        return  # optional alias not present on gh-pages — nothing to keep
+            raise RuntimeError(_PRESERVE_FAILED_MSG.format(name=name, ref=ref))
+        return  # the optional `latest` alias is not present yet — nothing to keep
     # Extract the in-memory tar with the stdlib so the script needs no external
-    # ``tar`` binary. The stream is our own trusted ``git archive`` output; use
-    # the safe extraction filter where available (Python 3.12+).
+    # ``tar`` binary. The stream is our own trusted ``git archive`` output, but
+    # extract through the ``data`` filter regardless — it rejects absolute paths,
+    # ``..`` traversals, links escaping the destination, and device nodes. An
+    # unfiltered fallback branch is what CodeQL flags as ``py/tarslip`` (high) on
+    # the first pull request of every generated project, so there is none: on an
+    # interpreter without the filter this fails loudly instead.
     with tarfile.open(fileobj=io.BytesIO(archive.stdout)) as tar:
-        if sys.version_info >= (3, 12):
-            tar.extractall(out, filter="data")
-        else:
-            tar.extractall(out)  # noqa: S202
+        if not hasattr(tarfile, "data_filter"):
+            raise RuntimeError(_NO_TAR_FILTER_MSG)
+        tar.extractall(out, filter="data")
 
 
 def assemble_site(out: Path, slug: str, latest: str, all_slugs: list[str]) -> None:
@@ -250,7 +273,7 @@ def assemble_site(out: Path, slug: str, latest: str, all_slugs: list[str]) -> No
     preserved = {s for s in all_slugs if s != slug}
     if slug != latest:
         preserved.add("latest")
-    for name in sorted(preserved):
+    for name in preserved:
         preserve_from_gh_pages(name, out, ref, required=name != "latest")
 
 

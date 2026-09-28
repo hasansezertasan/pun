@@ -20,31 +20,62 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Check out the latest release tag
-        # Manual redeploy has no release event. Build the newest *released* tag's
-        # source (not the default branch's HEAD, which may carry unreleased
-        # commits that would overwrite the tagged version's docs), and set
-        # DOCS_BUILD_VERSION from that same tag. Requires at least one release.
+        # Manual redeploy has no release event. Build the newest *published*
+        # release's source (not the default branch's HEAD, which may carry
+        # unreleased commits that would overwrite the tagged version's docs), and
+        # set DOCS_BUILD_VERSION from that same tag. Requires at least one
+        # published release.
         #
-        # Ask GitHub for the latest release rather than using `git describe`:
-        # release-please sets `force-tag-creation`, so the tag exists from the
-        # moment the release PR merges, while the release itself stays a draft
-        # until the publish jobs succeed. `git describe` knows nothing about
-        # release state and would pick that tag, publishing an unreleased (or
-        # failed) version's docs as `latest` — exactly when a manual redeploy is
-        # most likely to be run. `/releases/latest` excludes drafts and
+        # `git describe --tags` would pick the newest tag regardless of release
+        # state. release-please creates the tag (force-tag-creation) the moment
+        # the release PR merges and leaves the release a DRAFT until the publish
+        # jobs succeed, so a redeploy run in that window — the likely moment,
+        # right after a failed release — would publish the unreleased version's
+        # docs as `latest`. The releases/latest endpoint excludes drafts and
         # prereleases by definition.
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" --jq .tag_name)"
+          echo "Redeploying documentation for the latest published release: $tag"
+          dispatch_ref="$(git rev-parse HEAD)"
           git checkout --force --detach "$tag"
+          # Keep THIS revision's tools/build_docs.py. The tag carries the docs
+          # *sources* we want to rebuild, but build_docs.py is orchestration —
+          # the same layer as this workflow file, which workflow_dispatch already
+          # takes from the dispatch ref. Without this, a project that adopts a
+          # template update before cutting its next release would still run the
+          # tagged script on a manual redeploy, and an older one that returns
+          # silently when `git archive` cannot read a listed version would drop
+          # it from the assembled site — which the deploy then cleans off
+          # gh-pages. That is exactly the deploy this guard exists to protect.
+          #
+          # Its *granularity* is configuration, not orchestration, so carry the
+          # tag's value across the swap: which slug a release occupies is fixed
+          # at publish time. Rebuilding 1.2.3 under `1` because the answer has
+          # since changed from minor to major would publish it a second time
+          # beside the live `1.2/` and repoint `latest` at the duplicate. A tag
+          # from before this script existed leaves it unset, and the dispatch
+          # revision's own baked answer stands. A tag whose script sets it in a
+          # form this cannot read fails instead: guessing is the duplicate-slug
+          # deploy described above.
+          granularity=""
+          if [ -f tools/build_docs.py ]; then
+            granularity="$(sed -nE 's/^(DEFAULT_)?VERSION_GRANULARITY = "([a-z]+)"$/\2/p' tools/build_docs.py)"
+            if [ -z "$granularity" ]; then
+              echo "::error::$tag's tools/build_docs.py does not set VERSION_GRANULARITY in the rendered form; refusing to guess which docs slug this release occupies"
+              exit 1
+            fi
+          fi
+          git checkout "$dispatch_ref" -- tools/build_docs.py
+          if [ -n "$granularity" ]; then
+            echo "DOCS_VERSION_GRANULARITY=$granularity" >> "$GITHUB_ENV"
+          fi
           echo "DOCS_BUILD_VERSION=${tag#v}" >> "$GITHUB_ENV"
-      # Python and uv are set up *after* the tag checkout on purpose: both
-      # read pinned files from the working tree (.python-version, and
-      # pyproject.toml/uv.lock for the cache key). Run before the checkout
-      # they would take them from the default branch, so a redeploy would
-      # rebuild the tagged docs with whatever interpreter main has moved to.
       - name: Set up Python
+        # After the release-tag checkout, so .python-version is the interpreter
+        # that release actually shipped on — not whatever main has bumped to
+        # since. Same for the uv cache key, which reads pyproject.toml/uv.lock.
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version-file: .python-version
@@ -64,23 +95,35 @@ jobs:
         # the same tag always renders the same docs output (reproducible-builds.org).
         run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
       - name: Fetch gh-pages branch
-        # build_docs.py preserves already-published versions from gh-pages, and the
-        # deploy below cleans the branch (keeping only pr-preview/**). A swallowed
-        # fetch error would therefore look identical to "no prior versions" and
-        # delete every published version directory. Distinguish the two: exit 2
-        # from `ls-remote --exit-code` means the ref genuinely does not exist yet
-        # (the first release); anything else is a real failure and must stop here.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # actions/checkout runs with `persist-credentials: false` (artipacked),
+        # so raw git has no credentials: on a PRIVATE repo an unauthenticated
+        # `ls-remote`/`fetch` fails outright. Pass the token per invocation via
+        # an in-memory http.extraheader — the same header actions/checkout uses
+        # internally — so nothing is written to .git/config for a later step (or
+        # an uploaded artifact) to pick up.
+        #
+        # `git fetch ... || echo` would swallow a transport error as if the branch
+        # were simply absent: build_docs.py would then assemble a site with no
+        # prior versions and the deploy below (clean, minus pr-preview/**) would
+        # DELETE every published version directory from gh-pages. ls-remote can
+        # tell the two apart — exit 2 is "no such ref", anything else is a real
+        # failure worth aborting on.
         run: |
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           set +e
-          git ls-remote --exit-code --heads origin gh-pages >/dev/null 2>&1
+          git -c "http.https://github.com/.extraheader=$auth" \
+            ls-remote --exit-code --heads origin gh-pages >/dev/null 2>&1
           rc=$?
           set -e
           if [ "$rc" -eq 0 ]; then
-            git fetch origin gh-pages:gh-pages
+            git -c "http.https://github.com/.extraheader=$auth" \
+              fetch origin gh-pages:gh-pages
           elif [ "$rc" -eq 2 ]; then
-            echo "gh-pages does not exist yet — first release, nothing to preserve"
+            echo "gh-pages does not exist yet — first deploy, nothing to preserve"
           else
-            echo "::error::Could not query origin for gh-pages (ls-remote exit $rc); refusing to continue, since assuming an empty branch would delete published docs"
+            echo "::error::could not query origin for gh-pages (ls-remote exit $rc); refusing to continue and risk deleting published versions"
             exit 1
           fi
       - name: Build versioned docs

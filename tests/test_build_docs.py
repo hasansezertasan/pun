@@ -63,7 +63,7 @@ def test_published_version_failure_aborts(
     module = _load()
     monkeypatch.setattr(module.subprocess, "run", _failing_run(module))
 
-    with pytest.raises(RuntimeError, match="Could not read published docs version"):
+    with pytest.raises(RuntimeError, match="could not read published docs for"):
         module.preserve_from_gh_pages("0.1", tmp_path, "origin/gh-pages", required=True)
 
 

@@ -117,9 +117,13 @@ jobs:
       - name: Run style and type checks
         run: uv run --locked tox run -e style
   docs-doctest:
-    name: Test documentation examples
-    # Component test jobs override tox's default env list, so keep doctests in
-    # their own job to preserve the generated project's documented examples.
+    name: Build and test documentation
+    # Component test jobs override tox's default env list, so keep the docs
+    # builds in their own job to preserve the generated project's documented
+    # examples. This job is aggregated by `check`, which is the required status
+    # context — so it is also where the strict (`-W`-equivalent) HTML build must
+    # run. docs-preview.yml runs the same gate but is skipped for fork PRs and
+    # is not a required context, so it can never block a merge on its own.
     if: ${{ github.event.pull_request.draft != true }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -129,6 +133,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
         with:
+          # sphinx-last-updated-by-git needs the full history; on a depth-1 clone
+          # it warns "Git clone too shallow" on every page and the warning gate
+          # below turns each one into an error.
+          fetch-depth: 0
           persist-credentials: false
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
@@ -141,6 +149,17 @@ jobs:
           cache-dependency-glob: |
             pyproject.toml
             uv.lock
+      - name: Set reproducible build epoch
+        # Pin Sphinx's "today"/copyright to the last commit date so the same
+        # commit always renders the same docs output (reproducible-builds.org).
+        run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
+      - name: Build documentation with the warning gate
+        # docs-build pairs `sphinx-build -w` with docs/check_warnings.py, which
+        # fails on any warning outside the allowlist. docs-doctest alone is
+        # `-b doctest` with no `-W`, so without this step broken references pass
+        # every required check. Runs first: a reference that does not resolve is
+        # worth reporting before the doctests that may depend on it.
+        run: uv run --locked tox run -e docs-build
       - name: Run documentation doctests
         run: uv run --locked tox run -e docs-doctest
   cli-installed:
@@ -595,9 +614,9 @@ jobs:
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5  # v7.1.1
         with:
           files: ./coverage.xml
-          # .github/codecov.yml restricts the project status to the `unit` flag.
-          # Without it the upload carries no flag, nothing matches that status,
-          # and the configured 99% gate silently never reports.
+          # .github/codecov.yml scopes the project status to `flags: [unit]`. An
+          # upload with no flag matches no flag-scoped status, so the 99% target
+          # would never be computed and `if_ci_failed: error` would be inert.
           flags: unit
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Note skipped coverage upload
