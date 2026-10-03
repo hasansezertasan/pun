@@ -219,7 +219,7 @@ hooks = [{ id = "yamlfmt", exclude = "^\\.copier-answers\\.yml$", args = ["-conf
 
 [[repos]]
 repo = "https://github.com/commitizen-tools/commitizen"
-rev = "v4.19.0"
+rev = "v4.19.1"
 hooks = [
   { id = "commitizen" },
   { id = "commitizen-branch", stages = ["pre-push"] },
