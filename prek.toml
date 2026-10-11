@@ -12,21 +12,8 @@ default_language_version.python = "python3.10"
 default_stages = ["pre-commit", "pre-push"]
 exclude = '''(?x)^(
     # Editor/debugger JSON configs that carry comments or trailing commas
-    \.devcontainer/devcontainer\.json$
-    |\.vscode/launch\.json$
-
-    # VCS and Python build/virtualenv directories
-    |\.git
-    |\.hg
-    |\.mypy_cache
-    |\.nox
-    |\.tox
-    |\.venv
-    |_build
-    |buck-out
-    |build
-    |dist
-    |alembic
+    \.devcontainer/devcontainer\.json
+    |\.vscode/launch\.json
 )$'''
 
 # Fast Rust-native reimplementations of common pre-commit-hooks. No git clone.
@@ -49,15 +36,6 @@ hooks = [
   ] },
   { id = "check-case-conflict" },
   { id = "detect-private-key" },
-]
-
-# check-yaml, debug-statements and check-ast have no Rust builtin (they need a
-# YAML loader / the Python AST), so they stay on the upstream repo. prek runs
-# them correctly, just without the builtin fast path.
-[[repos]]
-repo = "https://github.com/pre-commit/pre-commit-hooks"
-rev = "v6.0.0"
-hooks = [
   { id = "check-yaml" },
   { id = "check-executables-have-shebangs" },
   { id = "check-symlinks" },
@@ -67,13 +45,25 @@ hooks = [
   { id = "fix-byte-order-marker", exclude = '^\.gitignore$|(?i:\.ps[md]?1)$' },
   { id = "mixed-line-ending", args = ["--fix=auto"], exclude = '^\.gitignore$' },
   # auto fixes mixed endings, retaining consistent CRLF for Windows scripts.
+]
+
+# debug-statements and check-ast have no prek builtin (they need the Python
+# AST), so they stay on the upstream repo.
+[[repos]]
+repo = "https://github.com/pre-commit/pre-commit-hooks"
+rev = "v6.0.0"
+hooks = [
   { id = "debug-statements" },
   { id = "check-ast" },
 ]
 
 [[repos]]
 repo = "https://github.com/astral-sh/uv-pre-commit"
+<<<<<<< before updating
 rev = "0.13.0"
+=======
+rev = "0.12.24"
+>>>>>>> after updating
 hooks = [{ id = "uv-lock" }]
 
 # Runs before ruff so any `__all__` it inserts is sorted/formatted in the same pass.
@@ -221,6 +211,15 @@ hooks = [{ id = "markdownlint-cli2" }]
 repo = "https://github.com/shellcheck-py/shellcheck-py"
 rev = "v0.11.0.1"
 hooks = [{ id = "shellcheck" }]
+
+# shfmt formats those same scripts (shellcheck lints, it does not format). The
+# `shfmt` hook id installs a prebuilt binary from PyPI (no Go toolchain, unlike
+# `shfmt-src`). No style flags are passed, so shfmt reads `.editorconfig` and
+# indents `*.sh` with the 2 spaces editorconfig-checker enforces.
+[[repos]]
+repo = "https://github.com/scop/pre-commit-shfmt"
+rev = "v3.14.1-1"
+hooks = [{ id = "shfmt" }]
 
 # checkmake lints Makefiles a project adds later. Built from source via prek's
 # `golang` language support (the hook's manifest `types: [makefile]` scopes it,
