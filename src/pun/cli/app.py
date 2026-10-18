@@ -4,7 +4,7 @@ The ``pun`` command is the single Typer root. Every enabled
 component other than the primary (CLI > GUI > TUI > web > MCP > worker) is hung
 off it as a lazily-imported subcommand — ``pun interactive``
 (TUI), ``pun web``, ``pun mcp``, ... — rather
-than a separate ``pun-<name>`` console script (see ADR-019).
+than a separate ``pun-<name>`` console script (see https://hasansezertasan.github.io/copier-pyproject/context/components/#secondary-components-are-subcommands-of-one-console-root-not-separate-scripts).
 """
 # mypy: disable-error-code="misc"
 
