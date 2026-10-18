@@ -12,14 +12,8 @@ maintainers = [
 dynamic = ["version"]
 keywords = [
   "pun",
-<<<<<<< before updating
   "command-line",
   "cli",
-=======
-  "sphinx",
-  "typer",
-  "textual",
->>>>>>> after updating
   "tui",
 ]
 # TODO @hasansezertasan: Fill in the missing classifiers...
@@ -81,11 +75,7 @@ pun = "pun.__main__:main"
 
 [dependency-groups]
 dev = [
-<<<<<<< before updating
   "tox==4.65.0",
-=======
-  "tox==4.64.10",
->>>>>>> after updating
   "tox-uv==1.36.1",
   "debugpy==1.8.22",
   { include-group = "style" },
@@ -94,21 +84,12 @@ dev = [
 style = [
   "basedpyright==1.40.2",
   "detect-secrets==1.5.0",
-<<<<<<< before updating
   "editorconfig-checker==3.11.1",
   "import-linter==2.15",
   "mypy==2.4.0",
   "pylint==4.0.8",
   "pyrefly==1.3.1",
   "ruff==0.16.10",
-=======
-  "editorconfig-checker==3.8.0",
-  "import-linter==2.15",
-  "mypy==2.4.0",
-  "pylint==4.0.6",
-  "pyrefly==1.2.0",
-  "ruff==0.16.1",
->>>>>>> after updating
   "slotscheck==0.21.0",
   "sphinx-lint==1.0.2",
   "taplo==0.9.3",
@@ -124,8 +105,6 @@ style = [
 # group explicitly. Still a single version source, same as every other pin.
 sast = [
   "semgrep==1.180.0",
-<<<<<<< before updating
-=======
 ]
 # Dependency hygiene gets its own group for the same reason `sast` does: it is
 # only ever run by the on-demand `deps` tox env and the `deps` CI job, so a plain
@@ -135,7 +114,6 @@ sast = [
 deps = [
   "creosote==5.2.0",
   "deptry==0.25.1",
->>>>>>> after updating
 ]
 test = [
   "coverage-enable-subprocess==1.0",

@@ -7,18 +7,6 @@ name: Docs Preview
 # gh-pages.yml publish to the branch *root* and set `clean-exclude: pr-preview/**`
 # so a release never wipes live previews. See https://hasansezertasan.github.io/copier-pyproject/context/docs-stack/#pr-docs-previews-deploy-to-a-subfolder-of-the-projects-own-gh-pages-same-repo-only.
 #
-<<<<<<< before updating
-# The job builds the docs for every PR and only the deploy step is same-repo
-# only: a fork PR's GITHUB_TOKEN is read-only and cannot deploy, so the `if`
-# guard on that step skips forks cleanly rather than failing (fork-preview
-# support is planned for rossjrw/pr-preview-action v2). The guard deliberately
-# does not sit on the job — the build step below is the only place
-# docs/check_warnings.py runs on a pull request (ci.yml runs the doctest
-# builder, not the HTML build), so guarding the job let every fork PR through
-# with unreviewed Sphinx warnings. Plain `pull_request` (not
-# pull_request_target) means untrusted PR code never runs with the write token,
-# so no `dangerous-triggers` exception is needed.
-=======
 # Same-repo PRs only: a fork PR's GITHUB_TOKEN is read-only, so the `if` guards
 # skip forks cleanly rather than failing. This workflow is the *unprivileged*
 # half: it runs on `pull_request`, so its YAML comes from the PR itself and it
@@ -26,7 +14,6 @@ name: Docs Preview
 # it as an artifact; the publish happens in docs-preview-deploy.yml, a
 # `workflow_run` workflow that always runs from the default branch's copy of the
 # file, so a PR cannot edit the job that holds `contents: write`.
->>>>>>> after updating
 on:
   pull_request:
     branches: [main, master]
@@ -39,14 +26,9 @@ concurrency:
   group: docs-preview-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 jobs:
-<<<<<<< before updating
-  docs-preview:
-    name: Deploy docs preview
-=======
   meta:
     name: Record preview event
     if: github.event.pull_request.head.repo.full_name == github.repository
->>>>>>> after updating
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions: {}
@@ -89,12 +71,7 @@ jobs:
         with:
           python-version-file: .python-version
       - name: Setup uv
-<<<<<<< before updating
-        if: github.event.action != 'closed'
         uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884  # v10.3.0
-=======
-        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7  # v10.2.0
->>>>>>> after updating
         with:
           enable-cache: true
           cache-dependency-glob: |
@@ -114,24 +91,8 @@ jobs:
         run: |
           uv run --no-default-groups --group docs sphinx-build -w docs/_build/warnings.txt -b html docs docs/_build/html
           uv run --no-default-groups --group docs python docs/check_warnings.py
-<<<<<<< before updating
-      - name: Deploy preview
-        # Same-repo PRs only: a fork PR's GITHUB_TOKEN is read-only and cannot
-        # write to gh-pages. The guard sits on this step alone so the build and
-        # the check_warnings.py gate above still run for fork PRs — they are the
-        # only place that gate runs on a pull request, and skipping the whole
-        # job let Sphinx warnings through CI unnoticed on every fork PR.
-        if: github.event.pull_request.head.repo.full_name == github.repository
-        # action: auto deploys on opened/synchronize/reopened and removes the
-        # pr-preview/pr-<N>/ subfolder on closed; the sticky comment is updated
-        # in both cases. The action authenticates from its `token` input
-        # (default github.token) via github-pages-deploy-action, so the checkout
-        # above keeps persist-credentials: false.
-        uses: rossjrw/pr-preview-action@ffa7509e91a3ec8dfc2e5536c4d5c1acdf7a6de9  # v1.8.1
-=======
       - name: Upload docs artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
->>>>>>> after updating
         with:
           name: docs-preview-html
           path: docs/_build/html

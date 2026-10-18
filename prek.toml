@@ -62,11 +62,7 @@ hooks = [
 
 [[repos]]
 repo = "https://github.com/astral-sh/uv-pre-commit"
-<<<<<<< before updating
 rev = "0.13.0"
-=======
-rev = "0.12.24"
->>>>>>> after updating
 hooks = [{ id = "uv-lock" }]
 
 # Runs before ruff so any `__all__` it inserts is sorted/formatted in the same pass.
@@ -139,20 +135,6 @@ hooks = [
 ]
 
 [[repos]]
-<<<<<<< before updating
-repo = "https://github.com/pre-commit/mirrors-mypy"
-rev = "v2.4.0"
-hooks = [
-  # Scope the hook to src/ to match tox's canonical mypy (which type-checks only
-  # src/). Without this, the hook passes every changed .py file, which surfaces
-  # strict-decorator errors in tests/ that the canonical run never checks — not
-  # part of the shipped, type-checked surface.
-  { id = "mypy", files = "^src/", additional_dependencies = ["typer", "textual", "pydantic-settings"] },
-]
-
-[[repos]]
-=======
->>>>>>> after updating
 repo = "https://github.com/jendrikseipp/vulture"
 rev = "v2.16"
 hooks = [{ id = "vulture" }]
